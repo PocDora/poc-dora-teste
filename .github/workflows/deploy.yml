@@ -1,0 +1,68 @@
+name: Deploy Python App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image (sem push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64
+          push: false
+          tags: |
+            poc-dora-python:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Simular deploy
+        run: echo "Deploy realizado com sucesso"
+
+#      - name: Chamar webhook N8N (deployment)
+#        env:
+#          N8N_WEBHOOK_URL: ${{ secrets.N8N_WEBHOOK_URL }}
+#          TEAM: checkout
+#          SERVICE_NAME: python-api
+#          ENVIRONMENT: prod
+#          VERSION: ${{ github.sha }}
+#          DEPLOYED_AT: ${{ github.event.head_commit.timestamp || '' }}
+#        run: |
+#          # Se o timestamp do commit não existir (ex: em squash/manual), gera um novo em UTC
+#          if [ -z "$DEPLOYED_AT" ]; then
+#            DEPLOYED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+#          fi
+
+          # Monta o JSON de forma segura
+#          payload=$(jq -n \
+#            --arg team "$TEAM" \
+#            --arg service_name "$SERVICE_NAME" \
+#            --arg environment "$ENVIRONMENT" \
+#            --arg version "$VERSION" \
+#            --arg deployed_at "$DEPLOYED_AT" \
+#            '{team: $team, service_name: $service_name, environment: $environment, version: $version, deployed_at: $deployed_at}')
+
+          # Faz o POST
+#          curl -sS -X POST "$N8N_WEBHOOK_URL" \
+#            -H "Content-Type: application/json" \
+#            -d "$payload"
+
+#          echo "Webhook enviado para o n8n com payload:"
+#          echo "$payload"
+ 
